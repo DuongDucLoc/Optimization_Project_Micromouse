@@ -20,11 +20,29 @@ def check_intersection(point1, point2, edge):
     d1 = (a2 - x2)*(y1 - y2) + (y2 - b2)*(x1 - x2)
     d2 = (a1 - a2)*(y2 - b2) + (b2 - b1)*(x2 - a2)
     if d == 0:
-        if d1 == 0 or d2 == 0: return True
-        else: return False
+        if d1 != 0 or d2 != 0: return False
+        else:
+            a12 = a1 - a2
+            if a12 == 0:
+                b12 = b1 - b2
+                y1b2 = y1 - b2
+                y2b1 = y2 - b1
+                if b12 > 0:
+                    return (y1b2 >= 0 and y2b1 <= 0)
+                else: 
+                    return (y1b2 <= 0 and y2b1 >= 0)
+            else:
+                x1a2 = x1 - a2
+                x2a1 = x2 - a1
+                if a12 > 0:
+                    return (x1a2 >= 0 and x2a1 <= 0)
+                else:
+                    return (x1a2 <= 0 and x2a1 >= 0)
+                
     else:
-        u, v = d1/d, d2/d
-        return 0 <= u <= 1 and 0 <= v <= 1
+        cond_u = (all([d > 0, d1 >= 0, d1 - d <= 0]) or all([d < 0, d1 <= 0, d1 - d >= 0]))
+        cond_v = (all([d > 0, d2 >= 0, d2 - d <= 0]) or all([d < 0, d2 <= 0, d2 - d >= 0]))
+        return all([cond_u, cond_v])
 
 # Example check
 """
@@ -126,6 +144,13 @@ plt.plot(
 )
 plt.show
 """
+
+# point = [4, 3]
+# slope = [0, 1]
+# row, col = 4, 4
+# edge_list = [[[1, 2], [3, 3]], [[4, 1], [4, 2]]]
+# max_reach = get_furthest_reach(point, slope, row, col, edge_list)
+# print(max_reach)
 
 # Sort the edge_list, to speed up categorization
 def sort_edge_list(edge_list):
@@ -239,7 +264,7 @@ def is_empty_dict(dict):
     return all(len(dict[key]) == 0 for key in dict.keys())
 
 # To be run
-size = 90
+size = 40
 for index in range(1, 11):
 
     nodes_info = {
@@ -308,3 +333,80 @@ for index in range(1, 11):
 
     with open(new_path, "w") as f:
         json.dump(info, f, indent=1)
+
+# Create Entirely_redundant_points_list and
+# Active_nodes_info
+
+def split_dict_key(key):
+    """
+    Convert dict key 'i_j' to list [i, j]
+    """
+    coords = key.split("_")
+    return [int(coords[0]), int(coords[1])]
+
+def refine_nodes_info_and_redundant_points_10_to_100():
+    for size in [10*i for i in range(1, 5)]:
+        for index in range(1, 11):
+            node_path = Path(__file__).parent/"Nodes_info"/f"Size{size}"/f"sample{index}.json"
+            with open(node_path, "r") as f_in:
+                nodes_info = json.load(f_in)["nodes_info"]
+
+            active_nodes_dict = dict()
+            entirely_redundant_points_list = []
+
+            for key in nodes_info.keys():
+                if is_empty_dict(nodes_info[key]):
+                    entirely_redundant_points_list.append(split_dict_key(key))
+                else:
+                    active_nodes_dict[key] = nodes_info[key]
+
+            active_nodes_path = Path(__file__).parent/"Active_nodes_info"/f"Size{size}"/f"sample{index}.json"
+            entirely_redundant_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
+
+            redundant_dict = {
+                "entirely_redundant_points_list": entirely_redundant_points_list
+            }
+
+            with open(active_nodes_path, "w") as f:
+                json.dump(active_nodes_dict, f, indent=1)
+
+            with open(entirely_redundant_path, "w") as f:
+                json.dump(redundant_dict, f, indent=1)
+
+# Create Adjacent_nodes and Reachable_nodes
+
+# Adjacent_nodes
+# size, index = 4, 2
+
+# adjacent_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Adjacent_nodes"/f"Size{size}"/f"sample{index}.json"
+# active_nodes_path = Path(__file__).parent/"Active_nodes_info"/f"Size{size}"/f"sample{index}.json"
+# entirely_redundant_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
+
+# adjacent_nodes_dict = dict()
+
+# with open(active_nodes_path, "r") as f:
+#     active_nodes_info = json.load(f)
+
+# with open(entirely_redundant_path, "r") as f:
+#     entirely_redundant_nodes = json.load(f)["entirely_redundant_points_list"]
+
+# # Remove redundant nodes (nodes without adjacency)
+# nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
+# for node in entirely_redundant_nodes:
+#     nodes_list.remove(node)
+
+# # Update active_nodes_dict one by one through slope type
+# for current_col, current_row in nodes_list:
+#     node_list = []
+#     slope_dict = active_nodes_info[f"{current_col}_{current_row}"]
+#     for slope in slope_dict["begin"]:
+#         node_list.append([current_col + slope[0], current_row + slope[1]])
+#     for slope in slope_dict["middle"]:
+#         node_list.append([current_col + slope[0], current_row + slope[1]])
+#         node_list.append([current_col - slope[0], current_row - slope[1]])
+#     for slope in slope_dict["end"]:
+#         node_list.append([current_col - slope[0], current_row - slope[1]])
+#     adjacent_nodes_dict[f"{current_col}_{current_row}"] = node_list
+
+# with open(adjacent_nodes_path, "w") as f:
+#     json.dump(adjacent_nodes_dict, f, indent=1)
