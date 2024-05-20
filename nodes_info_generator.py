@@ -457,31 +457,65 @@ def generate_reachable_nodes_10_to_40():
 
 # Inadjacent and unreachable nodes: Get the remainder
 # Inadjacent nodes
-for size in [10*i for i in range(1, 5)]:
-    for index in range(1, 11):
-        inadjacent_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Inadjacent_nodes"/f"Size{size}"/f"sample{index}.json"
-        entirely_redundant_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
-        adjacent_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Adjacent_nodes"/f"Size{size}"/f"sample{index}.json"
+def generate_inadjacent_nodes_10_to_40():
+    for size in [10*i for i in range(1, 5)]:
+        for index in range(1, 11):
+            inadjacent_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Inadjacent_nodes"/f"Size{size}"/f"sample{index}.json"
+            entirely_redundant_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
+            adjacent_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Adjacent_nodes"/f"Size{size}"/f"sample{index}.json"
 
-        with open(entirely_redundant_path, "r") as f:
-            entirely_redundant_nodes = json.load(f)["entirely_redundant_points_list"]
+            with open(entirely_redundant_path, "r") as f:
+                entirely_redundant_nodes = json.load(f)["entirely_redundant_points_list"]
 
-        with open(adjacent_nodes_path, "r") as f:
-            adjacent_nodes = json.load(f)
-        
-        # Remove redundant nodes (nodes without adjacency)
-        nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
-        for node in entirely_redundant_nodes:
-            nodes_list.remove(node)
+            with open(adjacent_nodes_path, "r") as f:
+                adjacent_nodes = json.load(f)
+            
+            # Remove redundant nodes (nodes without adjacency)
+            nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
+            for node in entirely_redundant_nodes:
+                nodes_list.remove(node)
 
-        inadjacent_nodes_dict = dict()
-        # Update inadjacent_dict by getting the remainder of nodes_list for each node
-        for current_col, current_row in nodes_list:
-            temp = nodes_list.copy()
-            removed_nodes = adjacent_nodes[f"{current_col}_{current_row}"]
-            for node in removed_nodes:
-                temp.remove(node)
-            inadjacent_nodes_dict[f"{current_col}_{current_row}"] = temp
+            inadjacent_nodes_dict = dict()
+            # Update inadjacent_dict by getting the remainder of nodes_list for each node
+            for current_col, current_row in nodes_list:
+                temp = nodes_list.copy()
+                removed_nodes = adjacent_nodes[f"{current_col}_{current_row}"]
+                for node in removed_nodes:
+                    temp.remove(node)
+                inadjacent_nodes_dict[f"{current_col}_{current_row}"] = temp
 
-        with open(inadjacent_nodes_path, "w") as f:
-            json.dump(inadjacent_nodes_dict, f, indent=1)
+            with open(inadjacent_nodes_path, "w") as f:
+                json.dump(inadjacent_nodes_dict, f, indent=1)
+
+# Unreachable nodes
+def generate_unreachable_nodes_10_to_40():
+    for size in [10*i for i in range(1, 5)]:
+        for index in range(4, 11):
+            unreachable_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Unreachable_nodes"/f"Size{size}"/f"sample{index}.json"
+            entirely_redundant_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
+            reachable_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Reachable_nodes"/f"Size{size}"/f"sample{index}.json"
+
+            with open(entirely_redundant_path, "r") as f:
+                entirely_redundant_nodes = json.load(f)["entirely_redundant_points_list"]
+
+            with open(reachable_nodes_path, "r") as f:
+                reachable_nodes = json.load(f)
+            
+            # Remove redundant nodes (nodes without adjacency)
+            nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
+            for node in entirely_redundant_nodes:
+                nodes_list.remove(node)
+
+            unreachable_nodes_dict = dict()
+            # Update unreachable_dict by getting the remainder of nodes_list for each node
+            for current_col, current_row in nodes_list:
+                temp = nodes_list.copy()
+                removed_nodes = reachable_nodes[f"{current_col}_{current_row}"]
+                for node in removed_nodes:
+                    temp.remove(node)
+                unreachable_nodes_dict[f"{current_col}_{current_row}"] = temp
+
+            with open(unreachable_nodes_path, "w") as f:
+                json.dump(unreachable_nodes_dict, f, indent=1)
+
+generate_unreachable_nodes_10_to_40()
