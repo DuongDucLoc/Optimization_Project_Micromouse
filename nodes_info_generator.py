@@ -376,37 +376,80 @@ def refine_nodes_info_and_redundant_points_10_to_100():
 # Create Adjacent_nodes and Reachable_nodes
 
 # Adjacent_nodes
-# size, index = 4, 2
+def generate_adjacent_nodes_10_to_100():
+    for size in [10*i for i in range(1, 11)]:
+        for index in range(1, 11):
+            adjacent_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Adjacent_nodes"/f"Size{size}"/f"sample{index}.json"
+            active_nodes_path = Path(__file__).parent/"Active_nodes_info"/f"Size{size}"/f"sample{index}.json"
+            entirely_redundant_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
 
-# adjacent_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Adjacent_nodes"/f"Size{size}"/f"sample{index}.json"
-# active_nodes_path = Path(__file__).parent/"Active_nodes_info"/f"Size{size}"/f"sample{index}.json"
-# entirely_redundant_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
+            adjacent_nodes_dict = dict()
 
-# adjacent_nodes_dict = dict()
+            with open(active_nodes_path, "r") as f:
+                active_nodes_info = json.load(f)
 
-# with open(active_nodes_path, "r") as f:
-#     active_nodes_info = json.load(f)
+            with open(entirely_redundant_path, "r") as f:
+                entirely_redundant_nodes = json.load(f)["entirely_redundant_points_list"]
 
-# with open(entirely_redundant_path, "r") as f:
-#     entirely_redundant_nodes = json.load(f)["entirely_redundant_points_list"]
+            # Remove redundant nodes (nodes without adjacency)
+            nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
+            for node in entirely_redundant_nodes:
+                nodes_list.remove(node)
 
-# # Remove redundant nodes (nodes without adjacency)
-# nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
-# for node in entirely_redundant_nodes:
-#     nodes_list.remove(node)
+            # Update active_nodes_dict one by one through slope type
+            for current_col, current_row in nodes_list:
+                node_list = []
+                slope_dict = active_nodes_info[f"{current_col}_{current_row}"]
+                for slope in slope_dict["begin"]:
+                    node_list.append([current_col + slope[0], current_row + slope[1]])
+                for slope in slope_dict["middle"]:
+                    node_list.append([current_col + slope[0], current_row + slope[1]])
+                    node_list.append([current_col - slope[0], current_row - slope[1]])
+                for slope in slope_dict["end"]:
+                    node_list.append([current_col - slope[0], current_row - slope[1]])
+                adjacent_nodes_dict[f"{current_col}_{current_row}"] = node_list
 
-# # Update active_nodes_dict one by one through slope type
-# for current_col, current_row in nodes_list:
-#     node_list = []
-#     slope_dict = active_nodes_info[f"{current_col}_{current_row}"]
-#     for slope in slope_dict["begin"]:
-#         node_list.append([current_col + slope[0], current_row + slope[1]])
-#     for slope in slope_dict["middle"]:
-#         node_list.append([current_col + slope[0], current_row + slope[1]])
-#         node_list.append([current_col - slope[0], current_row - slope[1]])
-#     for slope in slope_dict["end"]:
-#         node_list.append([current_col - slope[0], current_row - slope[1]])
-#     adjacent_nodes_dict[f"{current_col}_{current_row}"] = node_list
+            with open(adjacent_nodes_path, "w") as f:
+                json.dump(adjacent_nodes_dict, f, indent=1)
 
-# with open(adjacent_nodes_path, "w") as f:
-#     json.dump(adjacent_nodes_dict, f, indent=1)
+# Reachable nodes
+for size in [10*i for i in range(1, 5)]:
+    for index in range(1, 11):
+        reachable_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Reachable_nodes"/f"Size{size}"/f"sample{index}.json"
+        active_nodes_path = Path(__file__).parent/"Active_nodes_info"/f"Size{size}"/f"sample{index}.json"
+        entirely_redundant_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
+        edge_path = Path(__file__).parent/"Sorted_edge_list"/f"Size{size}"/f"sample{index}.json"
+        
+        with open(edge_path, "r") as f:
+            edges = json.load(f)["edges"]
+
+        with open(active_nodes_path, "r") as f:
+            active_nodes_info = json.load(f)
+
+        with open(entirely_redundant_path, "r") as f:
+            entirely_redundant_nodes = json.load(f)["entirely_redundant_points_list"]
+
+        # Remove redundant nodes (nodes without adjacency)
+        nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
+        for node in entirely_redundant_nodes:
+            nodes_list.remove(node)
+
+        reachable_nodes_dict = {f"{current_col}_{current_row}": [] for current_col, current_row in nodes_list}
+
+        # Update reachable_nodes_dict one by one through slope type
+        for current_col, current_row in nodes_list:
+            point = [current_col, current_row]
+            begin_slopes = active_nodes_info[f"{current_col}_{current_row}"]["begin"]
+            for slope in begin_slopes:
+                max_reach = get_furthest_reach(point, slope, size, size, edges)
+                furthest_point = [current_col + max_reach * slope[0], current_row + max_reach * slope[1]]
+                point_list = get_points_between(point, furthest_point)
+                for first_index in range(max_reach):
+                    p1 = point_list[first_index]
+                    for second_index in range(first_index + 1, max_reach + 1):
+                        p2 = point_list[second_index]
+                        reachable_nodes_dict[f"{p1[0]}_{p1[1]}"].append(p2)
+                        reachable_nodes_dict[f"{p2[0]}_{p2[1]}"].append(p1)
+            
+        with open(reachable_nodes_path, "w") as f:
+            json.dump(reachable_nodes_dict, f, indent=1)
