@@ -264,75 +264,75 @@ def is_empty_dict(dict):
     return all(len(dict[key]) == 0 for key in dict.keys())
 
 # To be run
-size = 40
-for index in range(1, 11):
+# size = 40
+# for index in range(1, 11):
 
-    nodes_info = {
-    f"{i}_{j}": {
-        "begin": [], 
-        "middle": [], 
-        "end": []
-    } 
-    for j in range(1, size + 1) for i in range(1, size + 1)
-}
+#     nodes_info = {
+#     f"{i}_{j}": {
+#         "begin": [], 
+#         "middle": [], 
+#         "end": []
+#     } 
+#     for j in range(1, size + 1) for i in range(1, size + 1)
+# }
 
-    slopes_path = Path(__file__).parent/"Slopes"/f"Size{size}"
-    with open(slopes_path, "r") as f:
-        node_slopes = json.load(f)
+#     slopes_path = Path(__file__).parent/"Slopes"/f"Size{size}"
+#     with open(slopes_path, "r") as f:
+#         node_slopes = json.load(f)
 
-    grid_path = Path(__file__).parent/"Samples"/f"Size{size}"/f"sample{index}.json"
-    with open(grid_path, "r") as f:
-        grid_info = json.load(f)
+#     grid_path = Path(__file__).parent/"Samples"/f"Size{size}"/f"sample{index}.json"
+#     with open(grid_path, "r") as f:
+#         grid_info = json.load(f)
 
-    edge_path = Path(__file__).parent/"Sorted_edge_list"/f"Size{size}"/f"sample{index}.json"
-    with open(edge_path, "r") as f:
-        edges = json.load(f)["edges"]
+#     edge_path = Path(__file__).parent/"Sorted_edge_list"/f"Size{size}"/f"sample{index}.json"
+#     with open(edge_path, "r") as f:
+#         edges = json.load(f)["edges"]
 
-# When you have the redundant point list, change this
-    redundant_points_path = Path(__file__).parent/"Redundant_points_list"/f"Size{size}"/f"sample{index}.json"
-    with open(redundant_points_path, "r") as f:
-        redundant_points = json.load(f)["redundant_point_list"]
+# # When you have the redundant point list, change this
+#     redundant_points_path = Path(__file__).parent/"Redundant_points_list"/f"Size{size}"/f"sample{index}.json"
+#     with open(redundant_points_path, "r") as f:
+#         redundant_points = json.load(f)["redundant_point_list"]
 
-    nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
-    for point in redundant_points:
-        nodes_list.remove(point)
+#     nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
+#     for point in redundant_points:
+#         nodes_list.remove(point)
 
-    for current_col, current_row in nodes_list:
-        point = [current_col, current_row]
-        for slope in node_slopes[f"{current_col}_{current_row}"]:
-            max_reach = get_furthest_reach(point, slope, size, size, edges)
-            if max_reach > 0:
-                nodes_info[f"{current_col}_{current_row}"]["begin"].append(slope)
-                for num in range(1, max_reach):
-                    new_col = current_col + num * slope[0]
-                    new_row = current_row + num * slope[1]
-                    try:
-                        node_slopes[f"{new_col}_{new_row}"].remove(slope)
-                    except ValueError: 
-                        pass
-                    nodes_info[f"{new_col}_{new_row}"]["middle"].append(slope)
-                new_col = current_col + max_reach * slope[0]
-                new_row = current_row + max_reach * slope[1]
-                try:
-                    node_slopes[f"{new_col}_{new_row}"].remove(slope)
-                except ValueError:
-                    pass
-                nodes_info[f"{new_col}_{new_row}"]["end"].append(slope)
+#     for current_col, current_row in nodes_list:
+#         point = [current_col, current_row]
+#         for slope in node_slopes[f"{current_col}_{current_row}"]:
+#             max_reach = get_furthest_reach(point, slope, size, size, edges)
+#             if max_reach > 0:
+#                 nodes_info[f"{current_col}_{current_row}"]["begin"].append(slope)
+#                 for num in range(1, max_reach):
+#                     new_col = current_col + num * slope[0]
+#                     new_row = current_row + num * slope[1]
+#                     try:
+#                         node_slopes[f"{new_col}_{new_row}"].remove(slope)
+#                     except ValueError: 
+#                         pass
+#                     nodes_info[f"{new_col}_{new_row}"]["middle"].append(slope)
+#                 new_col = current_col + max_reach * slope[0]
+#                 new_row = current_row + max_reach * slope[1]
+#                 try:
+#                     node_slopes[f"{new_col}_{new_row}"].remove(slope)
+#                 except ValueError:
+#                     pass
+#                 nodes_info[f"{new_col}_{new_row}"]["end"].append(slope)
     
-    start = grid_info["start"]
-    target = grid_info["target"]
-    new_path = Path(__file__).parent/"Nodes_info"/f"Size{size}"/f"sample{index}.json"
-    if is_empty_dict(nodes_info[f"{start[0]}_{start[1]}"]) or is_empty_dict(nodes_info[f"{target[0]}_{target[1]}"]):
-        state = "invalid"
-    else: state = "valid"
+#     start = grid_info["start"]
+#     target = grid_info["target"]
+#     new_path = Path(__file__).parent/"Nodes_info"/f"Size{size}"/f"sample{index}.json"
+#     if is_empty_dict(nodes_info[f"{start[0]}_{start[1]}"]) or is_empty_dict(nodes_info[f"{target[0]}_{target[1]}"]):
+#         state = "invalid"
+#     else: state = "valid"
 
-    info = {
-        "state": state,
-        "nodes_info": nodes_info,
-    }
+#     info = {
+#         "state": state,
+#         "nodes_info": nodes_info,
+#     }
 
-    with open(new_path, "w") as f:
-        json.dump(info, f, indent=1)
+#     with open(new_path, "w") as f:
+#         json.dump(info, f, indent=1)
 
 # Create Entirely_redundant_points_list and
 # Active_nodes_info
