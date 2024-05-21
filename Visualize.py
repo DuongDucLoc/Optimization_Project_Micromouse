@@ -45,7 +45,7 @@ class GridGenerator:
         x_grid, y_grid = np.meshgrid(x, y)
 
         plt.plot(x_grid, y_grid, marker='o', color='k', linestyle='none', markersize=0.2)
-        plt.plot(self.start[0], self.start[1], marker='o', color='r', linestyle='none', markersize=1)
+        plt.plot(self.start[0], self.start[1], marker='o', color='b', linestyle='none', markersize=1)
         plt.plot(self.target[0], self.target[1], marker='o', color='r', linestyle='none', markersize=1)
         for edge in self.edges:
             plt.plot(
@@ -68,7 +68,7 @@ class GridGenerator:
         x_grid, y_grid = np.meshgrid(x, y)
 
         ax.plot(x_grid, y_grid, marker='o', color='k', linestyle='none', markersize=0.2)
-        ax.plot(self.start[0], self.start[1], marker='o', color='r', linestyle='none', markersize=1)
+        ax.plot(self.start[0], self.start[1], marker='o', color='b', linestyle='none', markersize=1)
         ax.plot(self.target[0], self.target[1], marker='o', color='r', linestyle='none', markersize=1)
         for edge in self.edges:
             ax.plot(
@@ -89,7 +89,17 @@ class GridGenerator:
         f"Start: {self.start}\n" +\
         f"Target: {self.target}"
         return string
-    
+
+def check_validity(size, index):
+    """
+    Check validity of sample (size, index)
+    """
+    path = Path(__file__).parent/"Validity"/f"Size{size}"/f"sample{index}.txt"
+    with open(path, "r") as f:
+        text = f.readline()
+    if text == "Invalid": return False
+    else: return True
+
 # Instance for generating a grid
 # row, col = 10, 10
 # path = Path(__file__).parent/"Samples"/"Size10"/"sample1.json"
@@ -137,3 +147,115 @@ class GridGenerator:
 
 #         A = GridGenerator(grid_info)
 #         A.save(save_path)
+
+# Draw proposed solutions - Method 1
+# size = 40
+# for index in range(4, 5):
+#     if check_validity(size, index):
+#         solution_path = Path(__file__).parent/"Graphing_purpose"/"Proposed_solutions"/f"Size{size}"/f"sample{index}.json"
+#         image_path = Path(__file__).parent/"Graphing_purpose"/"Proposed_solutions"/f"Size{size}"/f"sample{index}.png"
+#         with open(solution_path, "r") as f:
+#             nums = json.load(f)[0]
+#         if nums != "No path found":
+#             grid_path = Path(__file__).parent/"Samples"/f"Size{size}"/f"sample{index}.json"
+#             dictionary_path = Path(__file__).parent/"Graphing_purpose"/"Nodes_dictionary"/f"Size{size}"/f"sample{index}.json"
+#             with open(dictionary_path, "r") as f:
+#                 nodes_dict = json.load(f)["num_to_node"]
+#             with open(grid_path, "r") as f:
+#                 grid_info = json.load(f)
+
+#             row, column = grid_info["row"], grid_info["column"]
+#             start, target = grid_info["start"], grid_info["target"]
+#             edges = grid_info["edges"]
+#             point_list = []
+#             num = nums.pop(0)
+#             node = nodes_dict[str(num)]
+#             node_chars = node.split("_")
+#             node_coord = [int(node_chars[0]), int(node_chars[1])]
+#             point_list.append(node_coord)
+
+#             for num in nums:
+#                 node = nodes_dict[str(num)]
+#                 node_chars = node.split("_")
+#                 node_coord = [int(node_chars[0]), int(node_chars[1])]
+#                 if node_coord != point_list[-1]:
+#                     point_list.append(node_coord)
+
+#             # Draw
+#             fig, ax = plt.subplots(1, 1)
+#             x_coords = [point[0] for point in point_list]
+#             y_coords = [point[1] for point in point_list]
+#             x = np.linspace(1, row, row)
+#             y = np.linspace(1, column, column)
+#             x_grid, y_grid = np.meshgrid(x, y)
+
+#             ax.plot(x_grid, y_grid, marker='o', color='k', linestyle='none', markersize=0.2)
+#             ax.plot(start[0], start[1], marker='o', color='b', linestyle='none', markersize=1)
+#             ax.plot(target[0], target[1], marker='o', color='r', linestyle='none', markersize=1)
+#             for edge in edges:
+#                 ax.plot(
+#                     [edge[0][0], edge[1][0]],
+#                     [edge[0][1], edge[1][1]],
+#                     color='k',
+#                     linewidth=0.2
+#                 )
+#             ax.plot(x_coords, y_coords, color="g", linewidth=0.2)
+
+#             ax.axis('scaled')
+#             fig.savefig(image_path, bbox_inches="tight")
+#             plt.close(fig)
+
+# Draw proposed solutions - Method2
+def num_to_coords(num, col):
+    """
+    Note: No row index needed
+    """
+    if num /col == int(num / col):
+        current_row = num / col
+    else: 
+        current_row = int(num / col) + 1
+    current_col = num - col*(current_row - 1)
+    return [current_col, current_row]
+
+for size in [10*i for i in range(1, 5)]:
+    for index in range(1, 11):
+        if check_validity(size, index):
+            solution_path = Path(__file__).parent/"Graphing_purpose"/"Proposed_solutions2"/f"Size{size}"/f"sample{index}.json"
+            image_path = Path(__file__).parent/"Graphing_purpose"/"Proposed_solutions2"/f"Size{size}"/f"sample{index}.png"
+            with open(solution_path, "r") as f:
+                nums = json.load(f)[0]
+            if nums != "No path found":
+                grid_path = Path(__file__).parent/"Samples"/f"Size{size}"/f"sample{index}.json"
+                with open(grid_path, "r") as f:
+                    grid_info = json.load(f)
+
+                row, column = grid_info["row"], grid_info["column"]
+                start, target = grid_info["start"], grid_info["target"]
+                edges = grid_info["edges"]
+                point_list = []
+                for num in nums:
+                    point_list.append(num_to_coords(num, size))
+
+                # Draw
+                fig, ax = plt.subplots(1, 1)
+                x_coords = [point[0] for point in point_list]
+                y_coords = [point[1] for point in point_list]
+                x = np.linspace(1, row, row)
+                y = np.linspace(1, column, column)
+                x_grid, y_grid = np.meshgrid(x, y)
+
+                ax.plot(x_grid, y_grid, marker='o', color='k', linestyle='none', markersize=0.2)
+                ax.plot(start[0], start[1], marker='o', color='b', linestyle='none', markersize=1)
+                ax.plot(target[0], target[1], marker='o', color='r', linestyle='none', markersize=1)
+                for edge in edges:
+                    ax.plot(
+                        [edge[0][0], edge[1][0]],
+                        [edge[0][1], edge[1][1]],
+                        color='k',
+                        linewidth=0.2
+                    )
+                ax.plot(x_coords, y_coords, color="g", linewidth=0.2)
+
+                ax.axis('scaled')
+                fig.savefig(image_path, bbox_inches="tight")
+                plt.close(fig)

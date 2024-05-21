@@ -2,36 +2,37 @@ import json
 from pathlib import Path
 import matplotlib.pyplot as plt
 import os
+from functools import cmp_to_key
 
-# path = Path(__file__).parent/"Image"
+# Check validity of samples
+def generate_validity_10_to_40():
+    for size in [10*i for i in range(1, 5)]:
+        for index in range(1, 11):
+            grid_path = Path(__file__).parent/"Samples"/f"Size{size}"/f"sample{index}.json"
+            redundant_points_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
 
-# fig, ax = plt.subplots(1, 1)
-# ax.plot([0, 0], [1, 1], marker="o")
-# ax.axis("scaled")
-# fig.savefig(path/f"foo.png", bbox_inches='tight')
-# plt.show()
-# plt.close(fig)
+            with open(grid_path, "r") as f:
+                grid_info = json.load(f)
 
-# def split_dict_key(key):
-#     """
-#     Convert dict key 'i_j' to list [i, j]
-#     """
-#     coords = key.split("_")
-#     return [int(coords[0]), int(coords[1])]
+            with open(redundant_points_path, "r") as f:
+                redundant_points_list = json.load(f)["entirely_redundant_points_list"]
 
-# print(split_dict_key("1_2"))
+            start = grid_info["start"]
+            target = grid_info["target"]
+            text_path = Path(__file__).parent/"Validity"/f"Size{size}"/f"sample{index}.txt"
 
-# a = {"a": 1}
-# # print(a.keys())
-# for key in a.keys():
-#     print(key)
+            if (start in redundant_points_list) or (target in redundant_points_list):
+                with open(text_path, "w") as f:
+                    f.write("Invalid")
+            else:
+                with open(text_path, "w") as f:
+                    f.write("Valid")
 
-# path1 = Path(__file__).parent/"Modeling_purpose"/"Adjacent_nodes"
-# path2 = Path(__file__).parent/"Modeling_purpose"/"Reachable_nodes"
-# path3 = Path(__file__).parent/"Modeling_purpose"/"Unreachable_nodes"
-# path4 = Path(__file__).parent/"Modeling_purpose"/"Inadjacent_nodes"
+# size, index = 30, 1
+# node_dict_path = Path(__file__).parent/"Graphing_purpose"/"Nodes_dictionary"/f"Size{size}"/f"sample{index}.json"
+# with open(node_dict_path, "r") as f:
+#     print(len(json.load(f)["node_to_num"].keys()))
 
-# for path in [path3, path4]:
-#     for size in [10*i for i in range(1, 11)]:
-#         new_path = path/f"Size{size}"
-#         os.mkdir(new_path)
+# for size in [4] + [10*i for i in range(1, 5)]:
+#     save_path = Path(__file__).parent/"Graphing_purpose"/"Proposed_solutions2"/f"Size{size}"
+#     os.mkdir(save_path)

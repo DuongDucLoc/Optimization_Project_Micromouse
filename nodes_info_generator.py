@@ -25,17 +25,31 @@ def check_intersection(point1, point2, edge):
             a12 = a1 - a2
             if a12 == 0:
                 b12 = b1 - b2
+                y12 = y1 - y2
                 y1b2 = y1 - b2
                 y2b1 = y2 - b1
-                if b12 > 0:
+                y1b1 = y1 - b1
+                y2b2 = y2 - b2
+                if b12 > 0 and y12 > 0:
                     return (y1b2 >= 0 and y2b1 <= 0)
-                else: 
+                elif b12 > 0 and y12 < 0:
+                    return (y2b2 >= 0 and y1b1 <= 0)
+                elif b12 < 0 and y12 > 0:
+                    return (y2b2 <= 0 and y1b1 >= 0)
+                else:
                     return (y1b2 <= 0 and y2b1 >= 0)
             else:
+                x12 = x1 - x2
                 x1a2 = x1 - a2
                 x2a1 = x2 - a1
-                if a12 > 0:
+                x1a1 = x1 - a1
+                x2a2 = x2 - a2
+                if a12 > 0 and x12 > 0:
                     return (x1a2 >= 0 and x2a1 <= 0)
+                elif a12 > 0 and x12 < 0:
+                    return (x2a2 >= 0 and x1a1 <= 0)
+                elif a12 < 0 and x12 > 0:
+                    return (x2a2 <= 0 and x1a1 >= 0)
                 else:
                     return (x1a2 <= 0 and x2a1 >= 0)
                 
@@ -179,7 +193,10 @@ def num_to_coords(num, col):
     """
     Note: No row index needed
     """
-    current_row = int(num / col) + 1
+    if num /col == int(num / col):
+        current_row = num / col
+    else: 
+        current_row = int(num / col) + 1
     current_col = num - col*(current_row - 1)
     return [current_col, current_row]
 
@@ -264,75 +281,76 @@ def is_empty_dict(dict):
     return all(len(dict[key]) == 0 for key in dict.keys())
 
 # To be run
-# size = 40
-# for index in range(1, 11):
+# size = 4
+# for size in [10*i for i in range(1, 5)]:
+#     for index in range(1, 11):
 
-#     nodes_info = {
-#     f"{i}_{j}": {
-#         "begin": [], 
-#         "middle": [], 
-#         "end": []
-#     } 
-#     for j in range(1, size + 1) for i in range(1, size + 1)
-# }
-
-#     slopes_path = Path(__file__).parent/"Slopes"/f"Size{size}"
-#     with open(slopes_path, "r") as f:
-#         node_slopes = json.load(f)
-
-#     grid_path = Path(__file__).parent/"Samples"/f"Size{size}"/f"sample{index}.json"
-#     with open(grid_path, "r") as f:
-#         grid_info = json.load(f)
-
-#     edge_path = Path(__file__).parent/"Sorted_edge_list"/f"Size{size}"/f"sample{index}.json"
-#     with open(edge_path, "r") as f:
-#         edges = json.load(f)["edges"]
-
-# # When you have the redundant point list, change this
-#     redundant_points_path = Path(__file__).parent/"Redundant_points_list"/f"Size{size}"/f"sample{index}.json"
-#     with open(redundant_points_path, "r") as f:
-#         redundant_points = json.load(f)["redundant_point_list"]
-
-#     nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
-#     for point in redundant_points:
-#         nodes_list.remove(point)
-
-#     for current_col, current_row in nodes_list:
-#         point = [current_col, current_row]
-#         for slope in node_slopes[f"{current_col}_{current_row}"]:
-#             max_reach = get_furthest_reach(point, slope, size, size, edges)
-#             if max_reach > 0:
-#                 nodes_info[f"{current_col}_{current_row}"]["begin"].append(slope)
-#                 for num in range(1, max_reach):
-#                     new_col = current_col + num * slope[0]
-#                     new_row = current_row + num * slope[1]
-#                     try:
-#                         node_slopes[f"{new_col}_{new_row}"].remove(slope)
-#                     except ValueError: 
-#                         pass
-#                     nodes_info[f"{new_col}_{new_row}"]["middle"].append(slope)
-#                 new_col = current_col + max_reach * slope[0]
-#                 new_row = current_row + max_reach * slope[1]
-#                 try:
-#                     node_slopes[f"{new_col}_{new_row}"].remove(slope)
-#                 except ValueError:
-#                     pass
-#                 nodes_info[f"{new_col}_{new_row}"]["end"].append(slope)
-    
-#     start = grid_info["start"]
-#     target = grid_info["target"]
-#     new_path = Path(__file__).parent/"Nodes_info"/f"Size{size}"/f"sample{index}.json"
-#     if is_empty_dict(nodes_info[f"{start[0]}_{start[1]}"]) or is_empty_dict(nodes_info[f"{target[0]}_{target[1]}"]):
-#         state = "invalid"
-#     else: state = "valid"
-
-#     info = {
-#         "state": state,
-#         "nodes_info": nodes_info,
+#         nodes_info = {
+#         f"{i}_{j}": {
+#             "begin": [], 
+#             "middle": [], 
+#             "end": []
+#         } 
+#         for j in range(1, size + 1) for i in range(1, size + 1)
 #     }
 
-#     with open(new_path, "w") as f:
-#         json.dump(info, f, indent=1)
+#         slopes_path = Path(__file__).parent/"Slopes"/f"Size{size}"
+#         with open(slopes_path, "r") as f:
+#             node_slopes = json.load(f)
+
+#         grid_path = Path(__file__).parent/"Samples"/f"Size{size}"/f"sample{index}.json"
+#         with open(grid_path, "r") as f:
+#             grid_info = json.load(f)
+
+#         edge_path = Path(__file__).parent/"Sorted_edge_list"/f"Size{size}"/f"sample{index}.json"
+#         with open(edge_path, "r") as f:
+#             edges = json.load(f)["edges"]
+
+#     # When you have the redundant point list, change this
+#         redundant_points_path = Path(__file__).parent/"Redundant_points_list"/f"Size{size}"/f"sample{index}.json"
+#         with open(redundant_points_path, "r") as f:
+#             redundant_points = json.load(f)["redundant_point_list"]
+
+#         nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
+#         for point in redundant_points:
+#             nodes_list.remove(point)
+
+#         for current_col, current_row in nodes_list:
+#             point = [current_col, current_row]
+#             for slope in node_slopes[f"{current_col}_{current_row}"]:
+#                 max_reach = get_furthest_reach(point, slope, size, size, edges)
+#                 if max_reach > 0:
+#                     nodes_info[f"{current_col}_{current_row}"]["begin"].append(slope)
+#                     for num in range(1, max_reach):
+#                         new_col = current_col + num * slope[0]
+#                         new_row = current_row + num * slope[1]
+#                         try:
+#                             node_slopes[f"{new_col}_{new_row}"].remove(slope)
+#                         except ValueError: 
+#                             pass
+#                         nodes_info[f"{new_col}_{new_row}"]["middle"].append(slope)
+#                     new_col = current_col + max_reach * slope[0]
+#                     new_row = current_row + max_reach * slope[1]
+#                     try:
+#                         node_slopes[f"{new_col}_{new_row}"].remove(slope)
+#                     except ValueError:
+#                         pass
+#                     nodes_info[f"{new_col}_{new_row}"]["end"].append(slope)
+        
+#         start = grid_info["start"]
+#         target = grid_info["target"]
+#         new_path = Path(__file__).parent/"Nodes_info"/f"Size{size}"/f"sample{index}.json"
+#         if is_empty_dict(nodes_info[f"{start[0]}_{start[1]}"]) or is_empty_dict(nodes_info[f"{target[0]}_{target[1]}"]):
+#             state = "invalid"
+#         else: state = "valid"
+
+#         info = {
+#             "state": state,
+#             "nodes_info": nodes_info,
+#         }
+
+#         with open(new_path, "w") as f:
+#             json.dump(info, f, indent=1)
 
 # Create Entirely_redundant_points_list and
 # Active_nodes_info
@@ -344,7 +362,7 @@ def split_dict_key(key):
     coords = key.split("_")
     return [int(coords[0]), int(coords[1])]
 
-def refine_nodes_info_and_redundant_points_10_to_100():
+def refine_nodes_info_and_redundant_points_10_to_40():
     for size in [10*i for i in range(1, 5)]:
         for index in range(1, 11):
             node_path = Path(__file__).parent/"Nodes_info"/f"Size{size}"/f"sample{index}.json"
@@ -490,7 +508,7 @@ def generate_inadjacent_nodes_10_to_40():
 # Unreachable nodes
 def generate_unreachable_nodes_10_to_40():
     for size in [10*i for i in range(1, 5)]:
-        for index in range(4, 11):
+        for index in range(1, 11):
             unreachable_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Unreachable_nodes"/f"Size{size}"/f"sample{index}.json"
             entirely_redundant_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
             reachable_nodes_path = Path(__file__).parent/"Modeling_purpose"/"Reachable_nodes"/f"Size{size}"/f"sample{index}.json"
@@ -518,4 +536,43 @@ def generate_unreachable_nodes_10_to_40():
             with open(unreachable_nodes_path, "w") as f:
                 json.dump(unreachable_nodes_dict, f, indent=1)
 
-generate_unreachable_nodes_10_to_40()
+def generate_segments_and_slopes_10_to_40():
+    for size in [10*i for i in range(1, 5)]:
+        for index in range(1, 11):
+            segments_and_slopes_path = Path(__file__).parent/"Graphing_purpose"/"Segments_and_slopes"/f"Size{size}"/f"sample{index}.json"
+            active_nodes_path = Path(__file__).parent/"Active_nodes_info"/f"Size{size}"/f"sample{index}.json"
+            entirely_redundant_path = Path(__file__).parent/"Entirely_redundant_points_list"/f"Size{size}"/f"sample{index}.json"
+            edge_path = Path(__file__).parent/"Sorted_edge_list"/f"Size{size}"/f"sample{index}.json"
+            
+            with open(edge_path, "r") as f:
+                edges = json.load(f)["edges"]
+
+            with open(active_nodes_path, "r") as f:
+                active_nodes_info = json.load(f)
+
+            with open(entirely_redundant_path, "r") as f:
+                entirely_redundant_nodes = json.load(f)["entirely_redundant_points_list"]
+
+            # Remove redundant nodes (nodes without adjacency)
+            nodes_list = [[i, j] for j in range(1, size + 1) for i in range(1, size + 1)]
+            for node in entirely_redundant_nodes:
+                nodes_list.remove(node)
+
+            segments_and_slopes_list = []
+
+            # Update reachable_nodes_dict one by one through slope type
+            for current_col, current_row in nodes_list:
+                point = [current_col, current_row]
+                begin_slopes = active_nodes_info[f"{current_col}_{current_row}"]["begin"]
+                for slope in begin_slopes:
+                    max_reach = get_furthest_reach(point, slope, size, size, edges)
+                    furthest_point = [current_col + max_reach * slope[0], current_row + max_reach * slope[1]]
+                    point_list = get_points_between(point, furthest_point)
+                    segment = {
+                        "segment": point_list,
+                        "slope": slope,
+                    }
+                    segments_and_slopes_list.append(segment)
+                
+            with open(segments_and_slopes_path, "w") as f:
+                json.dump(segments_and_slopes_list, f, indent=1)
